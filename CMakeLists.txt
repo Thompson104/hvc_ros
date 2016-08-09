@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  roslint
 )
 
 ## System dependencies are found with CMake's conventions
@@ -186,4 +187,10 @@ include_directories(
 # endif()
 
 ## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+catkin_add_nosetests(test)
+
+
+#############
+## Linting ##
+#############
+roslint_python()
