@@ -8,6 +8,7 @@ from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 from geometry_msgs.msg import Pose
 import tf
 from math import radians
+from hvc_ros.msg import Face
 
 #Global Shot Command:
 command = [0xfe, 0x04, 0x03, 0x00, 0x0E, 0x00, 0x00]

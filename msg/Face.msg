@@ -1,0 +1,9 @@
+string name
+int16 x
+int16 y
+int16 size
+int16 det_conf
+int16 yaw
+int16 pitch
+int16 roll
+int16 dir_conf
