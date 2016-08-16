@@ -3,7 +3,10 @@
 <launch>
 
     <node pkg="hvc_ros" type="hvc_node.py" name="hvc_node">
-	    <param name="port" value="/dev/ttyUSB0" />
+	<param name="port" value="/dev/ttyUSB1" />
+        <param name="baud" value="921600" />
     </node>
+
+    <!-- node pkg="tf" type="static_transform_publisher" name="hvc_cam_link" args="1 0 0 0 0 0 /map /hvc_cam 100"/ -->
 
 </launch>
