@@ -8,7 +8,8 @@ from ddynamic_reconfigure_python.ddynamic_reconfigure import DDynamicReconfigure
 from geometry_msgs.msg import Pose
 import tf
 from math import radians
-from hvc_ros.msg import Face
+from hvc_ros.msg import Faces
+from hvc_ros.msg import Hands
 
 #Global Shot Command:
 command = [0xfe, 0x04, 0x03, 0x00, 0x0E, 0x00, 0x00]
@@ -46,7 +47,8 @@ class Face:
     dir_conf = 0
 
 def hvc_comms():
-    pub = rospy.Publisher('face', Pose, queue_size=1)
+    face_pub = rospy.Publisher('faces', Faces, queue_size=1)
+    hand_pub = rospy.Publisher('hands', Hands, queue_size=1)
     rospy.init_node('hvc_node', anonymous=True)
 
     # Connect to device
@@ -85,11 +87,13 @@ def hvc_comms():
             offset = num_hands*8+offset
             hand_data = [Hand() for x in range(num_hands)]
             for p in range(num_hands):
-                hand_data[p].name = "Hand_" + str(p)
-                hand_data[p].x = hand_array[p*8 + 0] + hand_array[p*8 + 1] << 1
-                hand_data[p].y = hand_array[p*8 + 2] + hand_array[p*8 + 3] << 1
-                hand_data[p].size = hand_array[p*8 + 4] + hand_array[p*8 + 5] << 1
-                hand_data[p].dir_conf = hand_array[p*8 + 6] + hand_array[p*8 + 7] << 1
+                msg = Hands()
+                msg.name = "Hand_" + str(p)
+                msg.x = hand_array[p*8 + 0] + hand_array[p*8 + 1] << 1
+                msg.y = hand_array[p*8 + 2] + hand_array[p*8 + 3] << 1
+                msg.size = hand_array[p*8 + 4] + hand_array[p*8 + 5] << 1
+                msg.det_conf = hand_array[p*8 + 6] + hand_array[p*8 + 7] << 1
+                hand_pub.publish(msg)
 
         if num_faces >= 1: ## for now only supporting face detection and direction... 16 BYTES!!
             f_o = 16
@@ -98,17 +102,19 @@ def hvc_comms():
             offset = num_faces*f_o+offset
             face_data = [Face() for x in range(num_faces)]
             for p in range(num_faces):
-                face_data[p].name = "Face_" + str(p)
-                face_data[p].det_conf = face_array[p*f_o + 6] + face_array[p*f_o + 7] << 1
+                msg = Faces()
+                msg.name = "Face_" + str(p)
+                msg.det_conf = face_array[p*f_o + 6] + face_array[p*f_o + 7] << 1
             #if face_data[p].det_conf >= thresh:
-                face_data[p].x = face_array[p*f_o + 0] + face_array[p*f_o + 1] << 1
-                face_data[p].y = face_array[p*f_o + 2] + face_array[p*f_o + 3] << 1
-                face_data[p].size = face_array[p*f_o + 4] + face_array[p*f_o + 5] << 1
+                msg.x = face_array[p*f_o + 0] + face_array[p*f_o + 1] << 1
+                msg.y = face_array[p*f_o + 2] + face_array[p*f_o + 3] << 1
+                msg.size = face_array[p*f_o + 4] + face_array[p*f_o + 5] << 1
                 face_data[p].dir_conf = face_array[p*f_o + 14] + face_array[p*f_o + 15] << 1
             #if face_data[p].dir_conf >= thresh:
                 face_data[p].yaw = face_array[p*f_o + 8] + face_array[p*f_o + 9] << 1
                 face_data[p].pitch = face_array[p*f_o + 10] + face_array[p*f_o + 11] << 1
                 face_data[p].roll = face_array[p*f_o + 12] + face_array[p*f_o + 13] << 1
+                face_pub.publish(msg)
 
             # THIS needs a lot more effort, TF generation from head size estimation needs segmentation calibration, else I need medication
 
