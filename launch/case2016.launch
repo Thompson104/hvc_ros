@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+
+<launch>
+
+<!-- Launch settings for UR10 driver -->
+  <arg name="robot_ip" default="192.168.131.22"/>
+  <arg name="limited" default="false"/>
+  <arg name="min_payload"  default="0.0"/>
+  <arg name="max_payload"  default="5.0"/>
+  <arg name="prefix" default="ur10_arm_" />
+  <arg name="servoj_time" default="0.008" />
+  <arg name="base_frame" default="$(arg prefix)base_link" />
+  <arg name="tool_frame" default="$(arg prefix)tool0_controller" />
+
+  <node name="ur_driver" pkg="ur_modern_driver" type="ur_driver" output="screen">
+    <param name="prefix" type="str" value="$(arg prefix)" />
+    <param name="robot_ip_address" type="str" value="$(arg robot_ip)" />
+    <param name="min_payload" type="double" value="$(arg min_payload)" />
+    <param name="max_payload" type="double" value="$(arg max_payload)" />
+    <param name="max_velocity" type="double" value="10.0" />
+    <param name="servoj_time" type="double" value="$(arg servoj_time)" />
+    <param name="base_frame" type="str" value="$(arg base_frame)"/>
+    <param name="tool_frame" type="str" value="$(arg tool_frame)"/>
+  </node>
+
+  <!-- Load controller settings -->
+  <rosparam file="$(find ur_modern_driver)/config/ur10_controllers.yaml" command="load"/>
+
+  <!-- spawn controller manager -->
+  <node name="ros_control_controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" args="joint_state_controller" />
+
+  <!-- Remap follow_joint_trajectory -->
+  <remap from="arm_controller/follow_joint_trajectory" to="follow_joint_trajectory"/>
+
+  <!-- Launch moveit -->
+  <!-- include file="$(find tor11_moveit)/launch/move_group.launch"></include -->
+
+  <!-- Launch gripper controller -->
+  <node name="robotiq_c_model_control" pkg="robotiq_c_model_control" type="CModelRtuNode.py" respawn="true" 
+    output="screen" args="/dev/ttyUSB0"/>
+
+  <!-- Launch HVC ROS driver -->
+    <node pkg="hvc_ros" type="hvc_node.py" name="hvc_node">
+	<param name="port" value="/dev/ttyUSB1" />
+        <param name="baud" value="921600" />
+    </node>
+  
+  <!-- Launch Demo Module -->
+  <!-- -->
+
+</launch>
